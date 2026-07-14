@@ -118,7 +118,28 @@ export default function DashboardPage() {
         ) : null}
 
         <div className="grid gap-4 md:grid-cols-3">
-          {metrics?.kpis.map((kpi) => (
+          {(
+            metrics?.kpis ?? [
+              {
+                label: "Total Spent",
+                value: "0",
+                change: 0,
+                sparkline: [0],
+              },
+              {
+                label: "Expenses Logged",
+                value: "0",
+                change: 0,
+                sparkline: [0],
+              },
+              {
+                label: "Avg. Expense",
+                value: "0",
+                change: 0,
+                sparkline: [0],
+              },
+            ]
+          ).map((kpi) => (
             <KpiCard
               key={kpi.label}
               label={kpi.label}
