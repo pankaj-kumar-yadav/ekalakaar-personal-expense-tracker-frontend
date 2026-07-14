@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import * as React from "react"
 
-import { NavUser } from "@/components/nav-user"
+import { NavUser } from "@/components/sidebar/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +16,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/lib/auth-context"
 import {
   LayoutDashboardIcon,
   ReceiptIcon,
@@ -35,14 +36,9 @@ const navItems = [
   },
 ]
 
-const user = {
-  name: "User",
-  email: "user@example.com",
-  avatar: "",
-}
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const { user } = useAuth()
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -81,7 +77,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        {user ? (
+          <NavUser
+            user={{
+              name: user.name,
+              email: user.email,
+            }}
+          />
+        ) : null}
       </SidebarFooter>
     </Sidebar>
   )

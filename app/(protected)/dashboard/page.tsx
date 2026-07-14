@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { ArrowRightIcon, ReceiptIcon, WalletIcon } from "lucide-react"
 
-import { DashboardHeader } from "@/components/dashboard-header"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Button } from "@/components/ui/button"
 import {
   Card,

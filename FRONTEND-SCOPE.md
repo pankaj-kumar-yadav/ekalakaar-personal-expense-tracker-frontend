@@ -176,13 +176,13 @@ These are **not** required for qualification unless you choose to add them:
 
 ## Submission Checklist (Frontend)
 
-- [ ] Add expense form with Amount, Description, Category, Date
-- [ ] List all expenses from API
-- [ ] Show total amount spent
-- [ ] Delete button per expense, wired to API
-- [ ] Basic responsive layout
-- [ ] App runs locally (`npm run dev`)
-- [ ] Production build passes (`npm run build`)
+- [x] Add expense form with Amount, Description, Category, Date
+- [x] List all expenses from API
+- [x] Show total amount spent
+- [x] Delete button per expense, wired to API
+- [x] Basic responsive layout
+- [x] App runs locally (`npm run dev`)
+- [x] Production build passes (`npm run build`)
 - [ ] GitHub repo is public and includes this frontend
 - [ ] Live demo deployed (Vercel recommended for Next.js)
 - [ ] GitHub link emailed to **ekalakaartech@ekalakaar.com**

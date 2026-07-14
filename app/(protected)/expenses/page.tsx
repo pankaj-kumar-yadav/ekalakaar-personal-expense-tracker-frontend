@@ -1,5 +1,5 @@
-import { DashboardHeader } from "@/components/dashboard-header"
-import { ExpenseTracker } from "@/components/expense-tracker"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { ExpenseTracker } from "@/components/expense-tracker/expense-tracker"
 
 export default function ExpensesPage() {
   return (

@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { AddExpenseForm } from "@/components/add-expense-form"
-import { ExpenseList } from "@/components/expense-list"
-import { TotalSpent } from "@/components/total-spent"
+import { AddExpenseForm } from "@/components/expense-tracker/add-expense-form"
+import { ExpenseList } from "@/components/expense-tracker/expense-list"
+import { TotalSpent } from "@/components/expense-tracker/total-spent"
 import { getExpenses } from "@/lib/api"
 import type { Expense } from "@/lib/types"
 

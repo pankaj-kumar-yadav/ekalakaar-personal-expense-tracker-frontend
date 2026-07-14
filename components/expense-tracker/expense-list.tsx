@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ExpenseItem } from "@/components/expense-item"
+import { ExpenseItem } from "@/components/expense-tracker/expense-item"
 import type { Expense } from "@/lib/types"
 
 type ExpenseListProps = {
