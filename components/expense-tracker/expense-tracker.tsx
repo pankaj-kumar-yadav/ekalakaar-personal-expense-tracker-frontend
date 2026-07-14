@@ -1,11 +1,13 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { DatabaseIcon } from "lucide-react"
 
 import { AddExpenseForm } from "@/components/expense-tracker/add-expense-form"
 import { ExpenseList } from "@/components/expense-tracker/expense-list"
 import { KpiCard } from "@/components/dashboard/kpi-card"
-import { getExpenses } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { getExpenses, seedExpenses } from "@/lib/api"
 import { percentChange } from "@/lib/dashboard-stats"
 import { formatCurrency } from "@/lib/format"
 import type { Expense } from "@/lib/types"
@@ -13,7 +15,9 @@ import type { Expense } from "@/lib/types"
 export function ExpenseTracker() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSeeding, setIsSeeding] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [seedError, setSeedError] = useState<string | null>(null)
 
   const total = useMemo(
     () => expenses.reduce((sum, expense) => sum + expense.amount, 0),
@@ -54,8 +58,48 @@ export function ExpenseTracker() {
     setExpenses((current) => current.filter((expense) => expense._id !== id))
   }
 
+  async function handleSeed() {
+    setIsSeeding(true)
+    setSeedError(null)
+    try {
+      const created = await seedExpenses()
+      setExpenses((current) => [...created, ...current])
+    } catch (err) {
+      setSeedError(
+        err instanceof Error ? err.message : "Failed to seed expenses."
+      )
+    } finally {
+      setIsSeeding(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+            Expenses
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Add, review, and remove expenses in one place.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-9 gap-2 bg-card"
+          disabled={isSeeding || isLoading}
+          onClick={() => void handleSeed()}
+        >
+          <DatabaseIcon className="size-4" />
+          {isSeeding ? "Seeding…" : "Seed Data"}
+        </Button>
+      </div>
+
+      {seedError ? (
+        <p className="text-sm text-destructive">{seedError}</p>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-3">
         <KpiCard
           label="Total Spent"

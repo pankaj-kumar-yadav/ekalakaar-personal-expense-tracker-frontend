@@ -153,6 +153,17 @@ export async function createExpense(payload: NewExpense): Promise<Expense> {
   }
 }
 
+export async function seedExpenses(): Promise<Expense[]> {
+  try {
+    const { data } = await api.post<ApiListResponse<Expense>>(
+      "/api/expenses/seed"
+    )
+    return data.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error))
+  }
+}
+
 export async function deleteExpense(id: string): Promise<void> {
   try {
     await api.delete(`/api/expenses/${id}`)
