@@ -3,8 +3,18 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import * as React from "react"
+import {
+  HelpCircleIcon,
+  LayoutDashboardIcon,
+  MessageSquareIcon,
+  ReceiptIcon,
+  SearchIcon,
+  SettingsIcon,
+  WalletIcon,
+} from "lucide-react"
 
 import { NavUser } from "@/components/sidebar/nav-user"
+import { Input } from "@/components/ui/input"
 import {
   Sidebar,
   SidebarContent,
@@ -15,24 +25,38 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/lib/auth-context"
-import {
-  LayoutDashboardIcon,
-  ReceiptIcon,
-  WalletIcon,
-} from "lucide-react"
 
-const navItems = [
+const mainNav = [
   {
-    title: "Dashboard",
+    title: "Overview",
     url: "/dashboard",
-    icon: <LayoutDashboardIcon />,
+    icon: LayoutDashboardIcon,
   },
   {
     title: "Expenses",
     url: "/expenses",
-    icon: <ReceiptIcon />,
+    icon: ReceiptIcon,
+  },
+]
+
+const supportNav = [
+  {
+    title: "Feedback",
+    url: "#",
+    icon: MessageSquareIcon,
+  },
+  {
+    title: "Help & Support",
+    url: "#",
+    icon: HelpCircleIcon,
+  },
+  {
+    title: "Settings",
+    url: "#",
+    icon: SettingsIcon,
   },
 ]
 
@@ -42,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar variant="inset" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="gap-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
@@ -50,25 +74,64 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <WalletIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">Expense Tracker</span>
-                <span className="truncate text-xs">Personal finance</span>
+                <span className="truncate font-semibold tracking-tight">
+                  Expense Tracker
+                </span>
+                <span className="truncate text-xs text-muted-foreground">
+                  Personal finance
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        <div className="relative px-2">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search anything"
+            className="h-9 bg-muted/60 pl-8 text-sm"
+            readOnly
+            aria-label="Search"
+          />
+          <kbd className="pointer-events-none absolute top-1/2 right-3.5 hidden -translate-y-1/2 rounded border bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-block">
+            ⌘K
+          </kbd>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarMenu>
-            {navItems.map((item) => (
+            {mainNav.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   isActive={pathname === item.url}
                   tooltip={item.title}
                   render={<Link href={item.url} />}
                 >
-                  {item.icon}
+                  <item.icon />
+                  <span>{item.title}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarSeparator />
+        <SidebarGroup>
+          <SidebarGroupLabel>Support</SidebarGroupLabel>
+          <SidebarMenu>
+            {supportNav.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  tooltip={item.title}
+                  render={
+                    item.url === "#" ? (
+                      <button type="button" />
+                    ) : (
+                      <Link href={item.url} />
+                    )
+                  }
+                >
+                  <item.icon />
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

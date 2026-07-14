@@ -5,6 +5,7 @@ import { Trash2Icon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { deleteExpense } from "@/lib/api"
+import { categoryAccent } from "@/lib/dashboard-stats"
 import { formatCurrency, formatDate } from "@/lib/format"
 import type { Expense } from "@/lib/types"
 
@@ -35,11 +36,14 @@ export function ExpenseItem({ expense, onDeleted }: ExpenseItemProps) {
   }
 
   return (
-    <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
+    <div className="flex items-center justify-between gap-4 px-3 py-3 first:rounded-t-lg last:rounded-b-lg">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-medium">{expense.description}</p>
-          <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+          <p className="truncate font-medium">{expense.description}</p>
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+            <span
+              className={`size-1.5 rounded-sm ${categoryAccent(expense.category)}`}
+            />
             {expense.category}
           </span>
         </div>
@@ -50,16 +54,19 @@ export function ExpenseItem({ expense, onDeleted }: ExpenseItemProps) {
           <p className="mt-2 text-sm text-destructive">{error}</p>
         ) : null}
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-2">
-        <p className="font-medium">{formatCurrency(expense.amount)}</p>
+      <div className="flex shrink-0 items-center gap-2">
+        <p className="font-semibold tabular-nums">
+          {formatCurrency(expense.amount)}
+        </p>
         <Button
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          size="icon"
+          className="size-8 text-muted-foreground hover:text-destructive"
           onClick={handleDelete}
           disabled={isDeleting}
+          aria-label="Delete expense"
         >
           <Trash2Icon className="size-4" />
-          {isDeleting ? "Deleting..." : "Delete"}
         </Button>
       </div>
     </div>

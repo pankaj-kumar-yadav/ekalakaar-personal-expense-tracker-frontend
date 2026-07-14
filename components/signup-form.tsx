@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { WalletIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -64,11 +65,16 @@ export function SignupForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="border shadow-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create your account</CardTitle>
+          <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <WalletIcon className="size-5" />
+          </div>
+          <CardTitle className="text-xl tracking-tight">
+            Create your account
+          </CardTitle>
           <CardDescription>
-            Enter your email below to create your account
+            Start tracking expenses in a few steps
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -133,22 +139,23 @@ export function SignupForm({
               </Field>
               {error ? <FieldError>{error}</FieldError> : null}
               <Field>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="w-full">
                   {isSubmitting ? "Creating account..." : "Create Account"}
                 </Button>
                 <FieldDescription className="text-center">
                   Already have an account?{" "}
-                  <Link href="/">Sign in</Link>
+                  <Link
+                    href="/"
+                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                  >
+                    Sign in
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </FieldDescription>
     </div>
   )
 }

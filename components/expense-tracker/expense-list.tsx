@@ -25,7 +25,7 @@ export function ExpenseList({
   onDeleted,
 }: ExpenseListProps) {
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader>
         <CardTitle>All Expenses</CardTitle>
         <CardDescription>
@@ -37,9 +37,9 @@ export function ExpenseList({
       <CardContent>
         {isLoading ? (
           <div className="flex flex-col gap-3">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
           </div>
         ) : error ? (
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
@@ -56,10 +56,10 @@ export function ExpenseList({
           </div>
         ) : expenses.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No expenses yet. Add your first expense above.
+            No expenses yet. Add your first expense to the left.
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col divide-y rounded-lg border">
             {expenses.map((expense) => (
               <ExpenseItem
                 key={expense._id}

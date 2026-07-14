@@ -17,7 +17,7 @@ Reference document for the Ekalakaar Tech assignment. Use this when planning, bu
 
 ## Frontend Objective
 
-Build a clean, simple React UI that lets users **add**, **view**, and **delete** expenses, and see the **total amount spent**.
+Build a clean React UI that lets users **add**, **view**, and **delete** expenses, and see the **total amount spent** — presented in a **Kravio-inspired SaaS shell** (sidebar app layout, KPI cards, charts, activity feed, and data table).
 
 This repo uses **Next.js (React)** with TypeScript, Tailwind CSS, and shadcn/ui. That satisfies the assignment’s React frontend requirement.
 
@@ -117,17 +117,44 @@ type Expense = {
 
 ## UI / UX Scope
 
-### Layout
+### Visual direction — Kravio-inspired shell
 
-- Single main page or dashboard view
-- Clear page title (e.g. “Expense Tracker”)
-- Sections: **Add Expense** form, **Total Spent** summary, **All Expenses** list
+Full app shell remake (Approach: restyle on existing shadcn) matching a modern SaaS dashboard aesthetic:
 
-### Visual Design
+- Soft gray canvas + white/elevated cards (~10–12px radius), soft borders
+- Navy/dark primary for active nav and chart highlights
+- Green/red accents for positive/negative period trends
+- Light theme matches Kravio closely; dark theme is an adapted elevated variant (toggle kept)
 
-- Clean and minimal — avoid clutter
-- Consistent spacing, typography, and button styles
-- Use existing shadcn/ui components where possible (`Button`, `Input`, `Card`, `Label`, etc.)
+### Layout — protected shell
+
+- **Left sidebar:** brand, search field, grouped navigation (Main + Support/Settings), user profile footer with online indicator
+- **Top header:** breadcrumbs, utility icons (theme, notifications placeholder), sidebar trigger
+- **Pages covered:** Dashboard, Expenses, Login, Signup
+
+### Dashboard (Overview)
+
+Mapped from Kravio’s ticket overview to expense concepts:
+
+| Kravio element | Expense Tracker equivalent |
+|---|---|
+| KPI cards + % vs week | Total spent, expense count, avg expense + % vs prior period |
+| Ticket volume bar chart | Spending by day (selected period) |
+| Latest updates feed | Recent expense activity |
+| SLA monitoring table | Expense monitoring table (search + rows) |
+
+- Greeting: “Hello, {name}” + period selector (This week / Last week)
+- Client-side trends from `GET /api/expenses` — no new backend endpoints
+
+### Expenses page
+
+- Same shell language
+- Add form + list/table + total spent summary styled as KPI/card UI
+
+### Auth pages
+
+- Centered card on soft muted background; same radius/typography as shell
+- Theme toggle retained
 
 ### States to Implement
 
@@ -144,18 +171,24 @@ type Expense = {
 
 ```
 app/
-  page.tsx                 # Main expense tracker page
-  layout.tsx               # App shell, fonts, theme
+  (protected)/
+    dashboard/page.tsx     # Kravio-style overview
+    expenses/page.tsx      # Add + list expenses
+  (unprotected)/
+    page.tsx               # Login
+    signup/page.tsx
 
 components/
-  add-expense-form.tsx     # Form with validation + submit
-  expense-list.tsx         # Renders list of expenses
-  expense-item.tsx         # Single row/card with delete action
-  total-spent.tsx          # Total summary display
+  sidebar/                 # App shell navigation
+  dashboard/               # Header, KPIs, chart, activity, table
+  expense-tracker/         # Add form, list, item, total
+  login-form.tsx
+  signup-form.tsx
 
 lib/
-  api.ts                   # fetch helpers for expense endpoints
-  types.ts                 # Expense type definitions
+  api.ts
+  types.ts
+  dashboard-stats.ts       # Period KPIs / chart aggregates
 ```
 
 ---
@@ -164,13 +197,12 @@ lib/
 
 These are **not** required for qualification unless you choose to add them:
 
-- User authentication / login
 - Edit/update expense
-- Filtering, sorting, or search
-- Charts or analytics
+- Real notifications / ⌘K command palette (search UI can be presentational)
 - Pagination
 - Offline support / PWA
 - Multi-currency
+- Ticket/SLA domain features from Kravio (only visual patterns reused)
 
 ---
 
@@ -181,6 +213,7 @@ These are **not** required for qualification unless you choose to add them:
 - [x] Show total amount spent
 - [x] Delete button per expense, wired to API
 - [x] Basic responsive layout
+- [x] Kravio-inspired app shell (sidebar, dashboard KPIs/chart/table, auth restyle)
 - [x] App runs locally (`npm run dev`)
 - [x] Production build passes (`npm run build`)
 - [ ] GitHub repo is public and includes this frontend
@@ -208,3 +241,4 @@ The frontend is complete when a user can:
 3. See the updated total after adding or deleting
 4. Delete any expense and see it removed from the list
 5. Use the app comfortably on mobile and desktop
+6. Experience a consistent Kravio-style shell across dashboard, expenses, and auth

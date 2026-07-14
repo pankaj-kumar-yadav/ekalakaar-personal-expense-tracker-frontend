@@ -1,27 +1,42 @@
 "use client"
 
-import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { ArrowRightIcon, ReceiptIcon, WalletIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react"
 
+import { ActivityFeed } from "@/components/dashboard/activity-feed"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { ExpenseMonitoringTable } from "@/components/dashboard/expense-monitoring-table"
+import { KpiCard } from "@/components/dashboard/kpi-card"
+import { SpendingChart } from "@/components/dashboard/spending-chart"
 import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { getExpenses } from "@/lib/api"
-import { formatCurrency, formatDate } from "@/lib/format"
+import { useAuth } from "@/lib/auth-context"
+import {
+  buildDashboardStats,
+  percentChange,
+  sumAmount,
+  type PeriodKey,
+} from "@/lib/dashboard-stats"
+import { formatCurrency } from "@/lib/format"
 import type { Expense } from "@/lib/types"
 
+const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
+  { key: "this-week", label: "This week" },
+  { key: "last-week", label: "Last week" },
+]
+
 export default function DashboardPage() {
+  const { user } = useAuth()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [period, setPeriod] = useState<PeriodKey>("this-week")
 
   const loadExpenses = useCallback(async () => {
     setIsLoading(true)
@@ -40,150 +55,110 @@ export default function DashboardPage() {
     void loadExpenses()
   }, [loadExpenses])
 
-  const total = useMemo(
-    () => expenses.reduce((sum, expense) => sum + expense.amount, 0),
-    [expenses]
+  const stats = useMemo(
+    () => buildDashboardStats(expenses, period),
+    [expenses, period]
   )
 
-  const recentExpenses = useMemo(
-    () =>
-      [...expenses]
-        .sort(
-          (a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
+  const periodLabel =
+    PERIOD_OPTIONS.find((option) => option.key === period)?.label ?? "This week"
+
+  const chartChange = useMemo(() => {
+    const prev = sumAmount(
+      expenses.filter((expense) => {
+        const date = new Date(expense.date)
+        return (
+          date >= stats.range.previous.start &&
+          date <= stats.range.previous.end
         )
-        .slice(0, 5),
-    [expenses]
-  )
-
-  const categories = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const expense of expenses) {
-      counts.set(expense.category, (counts.get(expense.category) ?? 0) + 1)
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
-  }, [expenses])
+      })
+    )
+    return percentChange(stats.currentTotal, prev)
+  }, [expenses, stats.currentTotal, stats.range.previous])
 
   return (
     <>
       <DashboardHeader breadcrumbs={[{ label: "Dashboard" }]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Overview of your spending and recent activity.
-          </p>
+      <div className="flex flex-1 flex-col gap-5 p-4 md:p-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+              Hello, {user?.name ?? "there"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Here&apos;s your spending overview for the selected period.
+            </p>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" className="h-9 gap-2 bg-card" />
+              }
+            >
+              {periodLabel}
+              <ChevronDownIcon className="size-4 opacity-60" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {PERIOD_OPTIONS.map((option) => (
+                <DropdownMenuItem
+                  key={option.key}
+                  onClick={() => setPeriod(option.key)}
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+
+        {error ? (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+            <p className="text-destructive">{error}</p>
+            <button
+              type="button"
+              onClick={loadExpenses}
+              className="mt-2 text-sm font-medium underline underline-offset-4"
+            >
+              Try again
+            </button>
+          </div>
+        ) : null}
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardDescription className="flex items-center gap-2">
-                <WalletIcon className="size-4" />
-                Total Spent
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  formatCurrency(total)
-                )}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription className="flex items-center gap-2">
-                <ReceiptIcon className="size-4" />
-                Total Expenses
-              </CardDescription>
-              <CardTitle className="text-2xl">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  expenses.length
-                )}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Top Categories</CardDescription>
-              <CardTitle className="text-base font-medium">
-                {isLoading ? (
-                  <Skeleton className="h-6 w-full" />
-                ) : categories.length ? (
-                  categories
-                    .map(([category, count]) => `${category} (${count})`)
-                    .join(", ")
-                ) : (
-                  "No categories yet"
-                )}
-              </CardTitle>
-            </CardHeader>
-          </Card>
+          {stats.kpis.map((kpi) => (
+            <KpiCard
+              key={kpi.label}
+              label={kpi.label}
+              value={kpi.value}
+              change={kpi.change}
+              sparkline={kpi.sparkline}
+              isLoading={isLoading}
+              formatValue={
+                kpi.label === "Expenses Logged"
+                  ? undefined
+                  : (raw) => formatCurrency(Number(raw))
+              }
+            />
+          ))}
         </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-4">
-            <div>
-              <CardTitle>Recent Expenses</CardTitle>
-              <CardDescription>
-                Your latest transactions across all categories.
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" render={<Link href="/expenses" />}>
-              View all
-              <ArrowRightIcon className="size-4" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex flex-col gap-3">
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
-              </div>
-            ) : error ? (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
-                <p className="text-destructive">{error}</p>
-                <button
-                  type="button"
-                  onClick={loadExpenses}
-                  className="mt-2 text-sm font-medium underline underline-offset-4"
-                >
-                  Try again
-                </button>
-              </div>
-            ) : recentExpenses.length === 0 ? (
-              <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-                <p>No expenses yet.</p>
-                <Button className="mt-4" render={<Link href="/expenses" />}>
-                  Add your first expense
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {recentExpenses.map((expense) => (
-                  <div
-                    key={expense._id}
-                    className="flex items-center justify-between gap-4 rounded-lg border p-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{expense.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {expense.category} · {formatDate(expense.date)}
-                      </p>
-                    </div>
-                    <p className="shrink-0 font-medium">
-                      {formatCurrency(expense.amount)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+          <SpendingChart
+            total={stats.currentTotal}
+            change={chartChange}
+            days={stats.daily}
+            isLoading={isLoading}
+          />
+          <ActivityFeed expenses={stats.recent} isLoading={isLoading} />
+        </div>
+
+        <ExpenseMonitoringTable
+          expenses={expenses}
+          isLoading={isLoading}
+          onDeleted={(id) =>
+            setExpenses((current) => current.filter((item) => item._id !== id))
+          }
+        />
       </div>
     </>
   )

@@ -75,7 +75,7 @@ export function AddExpenseForm({
   }
 
   return (
-    <Card className={cn(className)}>
+    <Card className={cn("shadow-sm", className)}>
       <CardHeader>
         <CardTitle>Add Expense</CardTitle>
         <CardDescription>Record a new expense to track your spending.</CardDescription>

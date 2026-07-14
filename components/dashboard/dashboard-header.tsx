@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { BellIcon, HelpCircleIcon } from "lucide-react"
 
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
@@ -9,10 +12,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
-type BreadcrumbItem = {
+type Crumb = {
   label: string
   href?: string
 }
@@ -20,21 +24,21 @@ type BreadcrumbItem = {
 export function DashboardHeader({
   breadcrumbs,
 }: {
-  breadcrumbs: BreadcrumbItem[]
+  breadcrumbs: Crumb[]
 }) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2">
-      <div className="flex flex-1 items-center gap-2 px-4">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-card/40 px-4 backdrop-blur-sm">
+      <div className="flex flex-1 items-center gap-2">
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"
-          className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+          className="mr-1 data-vertical:h-4 data-vertical:self-auto"
         />
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
               <BreadcrumbLink render={<Link href="/dashboard" />}>
-                Expense Tracker
+                Overview
               </BreadcrumbLink>
             </BreadcrumbItem>
             {breadcrumbs.map((item, index) => (
@@ -54,8 +58,25 @@ export function DashboardHeader({
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <div className="px-4">
-        <ThemeToggle />
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 text-muted-foreground"
+          aria-label="Help"
+        >
+          <HelpCircleIcon className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative size-8 text-muted-foreground"
+          aria-label="Notifications"
+        >
+          <BellIcon className="size-4" />
+          <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive" />
+        </Button>
+        <ThemeToggle className="size-8 border-0 bg-transparent shadow-none" />
       </div>
     </header>
   )
