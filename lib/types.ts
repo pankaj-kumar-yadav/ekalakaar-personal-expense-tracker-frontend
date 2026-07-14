@@ -33,6 +33,37 @@ export type ApiListResponse<T> = {
   data: T[]
 }
 
+export type PeriodKey = "this-week" | "last-week"
+
+export type ActivityRangeKey = "today" | "yesterday" | "week"
+
+export type DashboardKpi = {
+  label: string
+  value: string
+  change: number
+  sparkline: number[]
+}
+
+export type DashboardMetrics = {
+  period: PeriodKey
+  range: { start: string; end: string }
+  kpis: DashboardKpi[]
+}
+
+export type DashboardChartDay = {
+  label: string
+  fullLabel: string
+  date: string
+  amount: number
+}
+
+export type DashboardChart = {
+  period: PeriodKey
+  total: number
+  change: number
+  days: DashboardChartDay[]
+}
+
 export const EXPENSE_CATEGORIES = [
   "Food",
   "Transport",

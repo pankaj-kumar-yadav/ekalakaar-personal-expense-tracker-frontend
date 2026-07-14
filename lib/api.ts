@@ -1,10 +1,14 @@
 import axios, { isAxiosError } from "axios"
 
 import type {
+  ActivityRangeKey,
   ApiListResponse,
   ApiSuccessResponse,
+  DashboardChart,
+  DashboardMetrics,
   Expense,
   NewExpense,
+  PeriodKey,
   User,
 } from "@/lib/types"
 
@@ -88,6 +92,49 @@ export async function getMe(): Promise<User> {
 export async function getExpenses(): Promise<Expense[]> {
   try {
     const { data } = await api.get<ApiListResponse<Expense>>("/api/expenses")
+    return data.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error))
+  }
+}
+
+export async function getDashboardMetrics(
+  period: PeriodKey = "this-week"
+): Promise<DashboardMetrics> {
+  try {
+    const { data } = await api.get<ApiSuccessResponse<DashboardMetrics>>(
+      "/api/dashboard/metrics",
+      { params: { period } }
+    )
+    return data.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error))
+  }
+}
+
+export async function getDashboardChart(
+  period: PeriodKey = "this-week"
+): Promise<DashboardChart> {
+  try {
+    const { data } = await api.get<ApiSuccessResponse<DashboardChart>>(
+      "/api/dashboard/chart",
+      { params: { period } }
+    )
+    return data.data
+  } catch (error) {
+    throw new Error(getErrorMessage(error))
+  }
+}
+
+export async function getDashboardActivity(params?: {
+  range?: ActivityRangeKey
+  q?: string
+}): Promise<Expense[]> {
+  try {
+    const { data } = await api.get<ApiListResponse<Expense>>(
+      "/api/dashboard/activity",
+      { params: { range: params?.range ?? "week", q: params?.q ?? "" } }
+    )
     return data.data
   } catch (error) {
     throw new Error(getErrorMessage(error))

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { ChevronDownIcon } from "lucide-react"
 
 import { ActivityFeed } from "@/components/dashboard/activity-feed"
@@ -15,16 +15,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getExpenses } from "@/lib/api"
-import { useAuth } from "@/lib/auth-context"
 import {
-  buildDashboardStats,
-  percentChange,
-  sumAmount,
-  type PeriodKey,
-} from "@/lib/dashboard-stats"
+  getDashboardChart,
+  getDashboardMetrics,
+  getExpenses,
+} from "@/lib/api"
+import { useAuth } from "@/lib/auth-context"
 import { formatCurrency } from "@/lib/format"
-import type { Expense } from "@/lib/types"
+import type {
+  DashboardChart,
+  DashboardMetrics,
+  Expense,
+  PeriodKey,
+} from "@/lib/types"
 
 const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
   { key: "this-week", label: "This week" },
@@ -33,48 +36,38 @@ const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const [period, setPeriod] = useState<PeriodKey>("this-week")
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+  const [chart, setChart] = useState<DashboardChart | null>(null)
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [period, setPeriod] = useState<PeriodKey>("this-week")
 
-  const loadExpenses = useCallback(async () => {
+  const loadDashboard = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await getExpenses()
-      setExpenses(data)
+      const [metricsData, chartData, expensesData] = await Promise.all([
+        getDashboardMetrics(period),
+        getDashboardChart(period),
+        getExpenses(),
+      ])
+      setMetrics(metricsData)
+      setChart(chartData)
+      setExpenses(expensesData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load expenses.")
+      setError(err instanceof Error ? err.message : "Failed to load dashboard.")
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [period])
 
   useEffect(() => {
-    void loadExpenses()
-  }, [loadExpenses])
-
-  const stats = useMemo(
-    () => buildDashboardStats(expenses, period),
-    [expenses, period]
-  )
+    void loadDashboard()
+  }, [loadDashboard])
 
   const periodLabel =
     PERIOD_OPTIONS.find((option) => option.key === period)?.label ?? "This week"
-
-  const chartChange = useMemo(() => {
-    const prev = sumAmount(
-      expenses.filter((expense) => {
-        const date = new Date(expense.date)
-        return (
-          date >= stats.range.previous.start &&
-          date <= stats.range.previous.end
-        )
-      })
-    )
-    return percentChange(stats.currentTotal, prev)
-  }, [expenses, stats.currentTotal, stats.range.previous])
 
   return (
     <>
@@ -116,7 +109,7 @@ export default function DashboardPage() {
             <p className="text-destructive">{error}</p>
             <button
               type="button"
-              onClick={loadExpenses}
+              onClick={loadDashboard}
               className="mt-2 text-sm font-medium underline underline-offset-4"
             >
               Try again
@@ -125,7 +118,7 @@ export default function DashboardPage() {
         ) : null}
 
         <div className="grid gap-4 md:grid-cols-3">
-          {stats.kpis.map((kpi) => (
+          {metrics?.kpis.map((kpi) => (
             <KpiCard
               key={kpi.label}
               label={kpi.label}
@@ -144,12 +137,12 @@ export default function DashboardPage() {
 
         <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
           <SpendingChart
-            total={stats.currentTotal}
-            change={chartChange}
-            days={stats.daily}
+            total={chart?.total ?? 0}
+            change={chart?.change ?? 0}
+            days={chart?.days ?? []}
             isLoading={isLoading}
           />
-          <ActivityFeed expenses={stats.recent} isLoading={isLoading} />
+          <ActivityFeed />
         </div>
 
         <ExpenseMonitoringTable

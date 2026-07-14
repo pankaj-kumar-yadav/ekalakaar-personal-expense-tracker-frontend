@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { format, parseISO } from "date-fns"
 import {
   PlusCircleIcon,
@@ -11,15 +11,9 @@ import {
 
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { Expense } from "@/lib/types"
+import { getDashboardActivity } from "@/lib/api"
+import type { ActivityRangeKey, Expense } from "@/lib/types"
 import { cn } from "@/lib/utils"
-
-type ActivityFeedProps = {
-  expenses: Expense[]
-  isLoading?: boolean
-}
-
-type TabKey = "today" | "yesterday" | "week"
 
 function activityIcon(category: string) {
   if (category === "Food") return ReceiptIcon
@@ -27,38 +21,41 @@ function activityIcon(category: string) {
   return PlusCircleIcon
 }
 
-export function ActivityFeed({ expenses, isLoading }: ActivityFeedProps) {
-  const [tab, setTab] = useState<TabKey>("week")
+export function ActivityFeed() {
+  const [tab, setTab] = useState<ActivityRangeKey>("week")
   const [query, setQuery] = useState("")
+  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const filtered = useMemo(() => {
-    const now = new Date()
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const startOfYesterday = new Date(startOfToday)
-    startOfYesterday.setDate(startOfYesterday.getDate() - 1)
-    const weekAgo = new Date(startOfToday)
-    weekAgo.setDate(weekAgo.getDate() - 7)
+  useEffect(() => {
+    let cancelled = false
 
-    return expenses
-      .filter((expense) => {
-        const date = parseISO(expense.createdAt ?? expense.date)
-        if (tab === "today") return date >= startOfToday
-        if (tab === "yesterday")
-          return date >= startOfYesterday && date < startOfToday
-        return date >= weekAgo
-      })
-      .filter((expense) => {
-        if (!query.trim()) return true
-        const q = query.toLowerCase()
-        return (
-          expense.description.toLowerCase().includes(q) ||
-          expense.category.toLowerCase().includes(q)
-        )
-      })
-      .slice(0, 6)
-  }, [expenses, query, tab])
+    async function loadActivity() {
+      setIsLoading(true)
+      try {
+        const data = await getDashboardActivity({ range: tab, q: query })
+        if (!cancelled) {
+          setExpenses(data)
+        }
+      } catch {
+        if (!cancelled) {
+          setExpenses([])
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
 
-  const tabs: { key: TabKey; label: string }[] = [
+    void loadActivity()
+
+    return () => {
+      cancelled = true
+    }
+  }, [query, tab])
+
+  const tabs: { key: ActivityRangeKey; label: string }[] = [
     { key: "today", label: "Today" },
     { key: "yesterday", label: "Yesterday" },
     { key: "week", label: "This week" },
@@ -103,12 +100,12 @@ export function ActivityFeed({ expenses, isLoading }: ActivityFeedProps) {
           Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-14 w-full" />
           ))
-        ) : filtered.length === 0 ? (
+        ) : expenses.length === 0 ? (
           <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
             No activity for this period.
           </p>
         ) : (
-          filtered.map((expense) => {
+          expenses.slice(0, 6).map((expense) => {
             const Icon = activityIcon(expense.category)
             const stamp = format(
               parseISO(expense.createdAt ?? expense.date),
