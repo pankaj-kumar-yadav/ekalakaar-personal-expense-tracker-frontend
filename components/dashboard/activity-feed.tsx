@@ -51,11 +51,15 @@ function activityStyle(category: string): {
   }
 }
 
+/** Keeps feed height stable so the sibling Spending Trend chart does not resize/redraw. */
+const ACTIVITY_LIST_MIN_CLASSNAME = "min-h-[20.5rem]"
+
 export function ActivityFeed() {
   const [tab, setTab] = useState<ActivityRangeKey>("week")
   const [query, setQuery] = useState("")
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +78,7 @@ export function ActivityFeed() {
       } finally {
         if (!cancelled) {
           setIsLoading(false)
+          setHasLoadedOnce(true)
         }
       }
     }
@@ -91,15 +96,17 @@ export function ActivityFeed() {
     { key: "week", label: "This week" },
   ]
 
+  const showInitialSkeleton = isLoading && !hasLoadedOnce
+
   return (
     <KravioCard
       title="Latest Updates"
       icon={LayersIcon}
       iconPosition="right"
       className="h-full"
-      innerClassName="flex flex-1 flex-col p-4"
+      innerClassName="flex min-h-0 flex-1 flex-col p-4"
     >
-      <div className="flex gap-1 rounded-lg bg-muted p-1">
+      <div className="flex shrink-0 gap-1 rounded-lg bg-muted p-1">
         {tabs.map((item) => (
           <button
             key={item.key}
@@ -117,7 +124,7 @@ export function ActivityFeed() {
         ))}
       </div>
 
-      <div className="relative mt-3">
+      <div className="relative mt-3 shrink-0">
         <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={query}
@@ -127,17 +134,23 @@ export function ActivityFeed() {
         />
       </div>
 
-      <div className="mt-3 flex flex-1 flex-col gap-2 overflow-auto">
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-14 w-full" />
+      <div
+        className={cn(
+          "mt-3 flex flex-1 flex-col gap-2 overflow-auto",
+          ACTIVITY_LIST_MIN_CLASSNAME,
+          isLoading && hasLoadedOnce && "opacity-70"
+        )}
+      >
+        {showInitialSkeleton ? (
+          Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-14 w-full shrink-0" />
           ))
         ) : expenses.length === 0 ? (
           <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
             No activity for this period.
           </p>
         ) : (
-          expenses.slice(0, 6).map((expense) => {
+          expenses.slice(0, 5).map((expense) => {
             const { icon: Icon, bubble } = activityStyle(expense.category)
             const stamp = format(
               parseISO(expense.createdAt ?? expense.date),
@@ -146,7 +159,7 @@ export function ActivityFeed() {
             return (
               <div
                 key={expense._id}
-                className="flex items-start gap-3 rounded-lg border border-transparent p-2 hover:border-border hover:bg-muted/40"
+                className="flex shrink-0 items-start gap-3 rounded-lg border border-transparent p-2 hover:border-border hover:bg-muted/40"
               >
                 <div
                   className={cn(

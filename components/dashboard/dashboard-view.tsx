@@ -15,7 +15,10 @@ export function DashboardView() {
     metrics,
     chart,
     expenses,
+    expenseMeta,
+    setExpensePage,
     isLoading,
+    isTableLoading,
     error,
     reload,
     onExpenseDeleted,
@@ -48,8 +51,10 @@ export function DashboardView() {
 
       <ExpenseMonitoringTable
         expenses={expenses}
-        isLoading={isLoading}
-        onDeleted={onExpenseDeleted}
+        meta={expenseMeta}
+        isLoading={isTableLoading}
+        onDeleted={() => void onExpenseDeleted()}
+        onPageChange={setExpensePage}
       />
     </div>
   )

@@ -3,11 +3,13 @@ import axios, { isAxiosError } from "axios"
 import type {
   ActivityRangeKey,
   ApiListResponse,
+  ApiPaginatedResponse,
   ApiSuccessResponse,
   DashboardChart,
   DashboardMetrics,
   Expense,
   NewExpense,
+  PaginatedResult,
   PeriodKey,
   User,
 } from "@/lib/types"
@@ -89,10 +91,21 @@ export async function getMe(): Promise<User> {
   }
 }
 
-export async function getExpenses(): Promise<Expense[]> {
+export async function getExpenses(params?: {
+  page?: number
+  limit?: number
+}): Promise<PaginatedResult<Expense>> {
   try {
-    const { data } = await api.get<ApiListResponse<Expense>>("/api/expenses")
-    return data.data
+    const { data } = await api.get<ApiPaginatedResponse<Expense>>(
+      "/api/expenses",
+      {
+        params: {
+          page: params?.page ?? 1,
+          limit: params?.limit ?? 100,
+        },
+      }
+    )
+    return { data: data.data, meta: data.meta }
   } catch (error) {
     throw new Error(getErrorMessage(error))
   }

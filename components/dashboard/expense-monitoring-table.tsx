@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react"
 import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
   CompassIcon,
   FilterIcon,
   MoreHorizontalIcon,
@@ -9,55 +11,71 @@ import {
   Trash2Icon,
 } from "lucide-react"
 
+import { ExpenseMonitorFilterDialog } from "@/components/dashboard/expense-monitor-filter-dialog"
+import {
+  EMPTY_MONITOR_FILTERS,
+  countActiveMonitorFilters,
+  filterExpensesByMonitorFilters,
+  type ExpenseMonitorFilters,
+} from "@/components/dashboard/expense-monitor-filters"
 import { KravioCard } from "@/components/dashboard/kravio-card"
+import { DeleteExpenseDialog } from "@/components/expense-tracker/delete-expense-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { deleteExpense } from "@/lib/api"
 import { categoryAccent } from "@/lib/dashboard-stats"
 import { formatCurrency, formatDate } from "@/lib/format"
-import type { Expense } from "@/lib/types"
+import { cn } from "@/lib/utils"
+import type { Expense, PaginationMeta } from "@/lib/types"
 
 type ExpenseMonitoringTableProps = {
   expenses: Expense[]
+  meta: PaginationMeta
   isLoading?: boolean
   onDeleted?: (id: string) => void
+  onPageChange: (page: number) => void
 }
 
 export function ExpenseMonitoringTable({
   expenses,
+  meta,
   isLoading,
   onDeleted,
+  onPageChange,
 }: ExpenseMonitoringTableProps) {
   const [query, setQuery] = useState("")
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [appliedFilters, setAppliedFilters] =
+    useState<ExpenseMonitorFilters>(EMPTY_MONITOR_FILTERS)
+  const [pendingDelete, setPendingDelete] = useState<Expense | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const activeFilterCount = countActiveMonitorFilters(appliedFilters)
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const filtered = q
-      ? expenses.filter(
-          (expense) =>
-            expense.description.toLowerCase().includes(q) ||
-            expense.category.toLowerCase().includes(q) ||
-            expense._id.toLowerCase().includes(q)
-        )
-      : expenses
+    const filtered = filterExpensesByMonitorFilters(expenses, appliedFilters)
+    if (!q) return filtered
 
-    return [...filtered]
-      .sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-      .slice(0, 8)
-  }, [expenses, query])
+    return filtered.filter(
+      (expense) =>
+        expense.description.toLowerCase().includes(q) ||
+        expense.category.toLowerCase().includes(q) ||
+        expense._id.toLowerCase().includes(q)
+    )
+  }, [expenses, query, appliedFilters])
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete this expense?")) return
-    setDeletingId(id)
+  async function handleConfirmDelete() {
+    if (!pendingDelete) return
+    setIsDeleting(true)
     try {
-      await deleteExpense(id)
+      await deleteExpense(pendingDelete._id)
+      const id = pendingDelete._id
+      setPendingDelete(null)
       onDeleted?.(id)
     } finally {
-      setDeletingId(null)
+      setIsDeleting(false)
     }
   }
 
@@ -72,9 +90,24 @@ export function ExpenseMonitoringTable({
           className="h-8 w-44 pl-8 text-sm"
         />
       </div>
-      <Button variant="outline" size="sm" className="h-8 gap-1.5">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className={cn(
+          "h-8 gap-1.5",
+          activeFilterCount > 0 &&
+            "border-primary/40 bg-primary/5 text-primary"
+        )}
+        onClick={() => setFilterOpen(true)}
+      >
         <FilterIcon className="size-3.5" />
         Filter
+        {activeFilterCount > 0 ? (
+          <span className="inline-flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+            {activeFilterCount}
+          </span>
+        ) : null}
       </Button>
       <Button variant="ghost" size="icon" className="size-8">
         <MoreHorizontalIcon className="size-4" />
@@ -105,7 +138,7 @@ export function ExpenseMonitoringTable({
           </thead>
           <tbody>
             {isLoading ? (
-              Array.from({ length: 4 }).map((_, index) => (
+              Array.from({ length: 10 }).map((_, index) => (
                 <tr key={index} className="border-b">
                   <td colSpan={7} className="px-4 py-3">
                     <Skeleton className="h-8 w-full" />
@@ -159,8 +192,10 @@ export function ExpenseMonitoringTable({
                         variant="ghost"
                         size="icon"
                         className="size-8 text-muted-foreground hover:text-destructive"
-                        disabled={deletingId === expense._id}
-                        onClick={() => handleDelete(expense._id)}
+                        disabled={
+                          isDeleting && pendingDelete?._id === expense._id
+                        }
+                        onClick={() => setPendingDelete(expense)}
                         aria-label="Delete expense"
                       >
                         <Trash2Icon className="size-4" />
@@ -173,6 +208,56 @@ export function ExpenseMonitoringTable({
           </tbody>
         </table>
       </div>
+
+      {meta.totalPage > 1 ? (
+        <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
+          <p className="text-xs text-muted-foreground">
+            Page {meta.page} of {meta.totalPage} · {meta.totalCount} total
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1"
+              disabled={!meta.hasPrev || isLoading}
+              onClick={() => onPageChange(meta.page - 1)}
+            >
+              <ChevronLeftIcon className="size-3.5" />
+              Prev
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1"
+              disabled={!meta.hasNext || isLoading}
+              onClick={() => onPageChange(meta.page + 1)}
+            >
+              Next
+              <ChevronRightIcon className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      <ExpenseMonitorFilterDialog
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        applied={appliedFilters}
+        onApply={setAppliedFilters}
+        onClear={() => setAppliedFilters(EMPTY_MONITOR_FILTERS)}
+      />
+
+      <DeleteExpenseDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setPendingDelete(null)
+        }}
+        expenseDescription={pendingDelete?.description ?? ""}
+        isDeleting={isDeleting}
+        onConfirm={handleConfirmDelete}
+      />
     </KravioCard>
   )
 }

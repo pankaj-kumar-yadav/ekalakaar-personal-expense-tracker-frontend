@@ -21,6 +21,8 @@ Build a clean React UI that lets users **add**, **view**, and **delete** expense
 
 This repo uses **Next.js (React)** with TypeScript, Tailwind CSS, and shadcn/ui. That satisfies the assignment’s React frontend requirement.
 
+**Package manager:** use **pnpm** for all installs and scripts in this frontend (`pnpm install`, `pnpm dev`, `pnpm build`). Do not use npm or yarn unless adapting an external snippet.
+
 ---
 
 ## Functional Requirements
@@ -214,8 +216,8 @@ These are **not** required for qualification unless you choose to add them:
 - [x] Delete button per expense, wired to API
 - [x] Basic responsive layout
 - [x] Kravio-inspired app shell (sidebar, dashboard KPIs/chart/table, auth restyle)
-- [x] App runs locally (`npm run dev`)
-- [x] Production build passes (`npm run build`)
+- [x] App runs locally (`pnpm dev`)
+- [x] Production build passes (`pnpm build`)
 - [ ] GitHub repo is public and includes this frontend
 - [ ] Live demo deployed (Vercel recommended for Next.js)
 - [ ] GitHub link emailed to **ekalakaartech@ekalakaar.com**

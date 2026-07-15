@@ -33,6 +33,26 @@ export type ApiListResponse<T> = {
   data: T[]
 }
 
+export type PaginationMeta = {
+  page: number
+  limit: number
+  totalCount: number
+  totalPage: number
+  hasNext: boolean
+  hasPrev: boolean
+}
+
+export type ApiPaginatedResponse<T> = {
+  success: true
+  data: T[]
+  meta: PaginationMeta
+}
+
+export type PaginatedResult<T> = {
+  data: T[]
+  meta: PaginationMeta
+}
+
 export type PeriodKey = "this-week" | "last-week"
 
 export type ActivityRangeKey = "today" | "yesterday" | "week"

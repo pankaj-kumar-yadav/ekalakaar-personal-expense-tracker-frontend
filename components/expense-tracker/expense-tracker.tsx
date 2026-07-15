@@ -15,10 +15,23 @@ import { Button } from "@/components/ui/button"
 import { getExpenses, seedExpenses } from "@/lib/api"
 import { percentChange } from "@/lib/dashboard-stats"
 import { formatCurrency } from "@/lib/format"
-import type { Expense } from "@/lib/types"
+import type { Expense, PaginationMeta } from "@/lib/types"
+
+const PAGE_SIZE = 5
+
+const EMPTY_META: PaginationMeta = {
+  page: 1,
+  limit: PAGE_SIZE,
+  totalCount: 0,
+  totalPage: 0,
+  hasNext: false,
+  hasPrev: false,
+}
 
 export function ExpenseTracker() {
   const [expenses, setExpenses] = useState<Expense[]>([])
+  const [meta, setMeta] = useState<PaginationMeta>(EMPTY_META)
+  const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [isSeeding, setIsSeeding] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,12 +51,13 @@ export function ExpenseTracker() {
     return last.length ? last : [0]
   }, [expenses])
 
-  const loadExpenses = useCallback(async () => {
+  const loadExpenses = useCallback(async (nextPage: number) => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await getExpenses()
-      setExpenses(data)
+      const result = await getExpenses({ page: nextPage, limit: PAGE_SIZE })
+      setExpenses(result.data)
+      setMeta(result.meta)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load expenses.")
     } finally {
@@ -52,23 +66,45 @@ export function ExpenseTracker() {
   }, [])
 
   useEffect(() => {
-    void loadExpenses()
-  }, [loadExpenses])
+    void loadExpenses(page)
+  }, [page, loadExpenses])
 
   function handleExpenseAdded(expense: Expense) {
-    setExpenses((current) => [expense, ...current])
+    if (page === 1) {
+      setExpenses((current) => [expense, ...current].slice(0, PAGE_SIZE))
+      setMeta((current) => {
+        const totalCount = current.totalCount + 1
+        const totalPage = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+        return {
+          ...current,
+          totalCount,
+          totalPage,
+          hasNext: totalPage > 1,
+        }
+      })
+      return
+    }
+    setPage(1)
   }
 
-  function handleExpenseDeleted(id: string) {
-    setExpenses((current) => current.filter((expense) => expense._id !== id))
+  async function handleExpenseDeleted() {
+    if (expenses.length === 1 && page > 1) {
+      setPage((current) => current - 1)
+      return
+    }
+    await loadExpenses(page)
   }
 
   async function handleSeed() {
     setIsSeeding(true)
     setSeedError(null)
     try {
-      const created = await seedExpenses()
-      setExpenses((current) => [...created, ...current])
+      await seedExpenses()
+      if (page === 1) {
+        await loadExpenses(1)
+      } else {
+        setPage(1)
+      }
     } catch (err) {
       setSeedError(
         err instanceof Error ? err.message : "Failed to seed expenses."
@@ -117,8 +153,11 @@ export function ExpenseTracker() {
         />
         <KpiCard
           label="All Expenses"
-          value={String(expenses.length)}
-          change={percentChange(expenses.length, Math.max(expenses.length - 1, 0))}
+          value={String(meta.totalCount)}
+          change={percentChange(
+            meta.totalCount,
+            Math.max(meta.totalCount - 1, 0)
+          )}
           sparkline={sparkline}
           isLoading={isLoading}
           icon={ReceiptIcon}
@@ -137,10 +176,12 @@ export function ExpenseTracker() {
         <AddExpenseForm onExpenseAdded={handleExpenseAdded} />
         <ExpenseList
           expenses={expenses}
+          meta={meta}
           isLoading={isLoading}
           error={error}
-          onRetry={loadExpenses}
-          onDeleted={handleExpenseDeleted}
+          onRetry={() => void loadExpenses(page)}
+          onDeleted={() => void handleExpenseDeleted()}
+          onPageChange={setPage}
         />
       </div>
     </div>

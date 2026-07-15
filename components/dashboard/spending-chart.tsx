@@ -30,7 +30,7 @@ type SpendingChartProps = {
 const chartConfig = {
   amount: {
     label: "Spending",
-    color: "var(--chart-1)",
+    color: "var(--color-sky-500)",
   },
 } satisfies ChartConfig
 
@@ -49,9 +49,9 @@ export function SpendingChart({
       icon={SparklesIcon}
       iconPosition="left"
       className="h-full"
-      innerClassName="flex flex-1 flex-col p-4"
+      innerClassName="flex min-h-0 flex-1 flex-col p-4"
     >
-      <div>
+      <div className="shrink-0">
         <p className="text-2xl font-semibold tracking-tight">
           {isLoading ? "—" : formatCurrency(total)}
         </p>
@@ -66,19 +66,33 @@ export function SpendingChart({
         </p>
       </div>
 
-      <div className="mt-6 flex min-h-[180px] flex-1 flex-col justify-end">
+      <div className="relative mt-4 min-h-[220px] min-w-0 flex-1">
         {isLoading ? (
-          <div className="h-[180px] w-full rounded-md bg-muted" />
+          <div className="absolute inset-0 rounded-md bg-muted" />
         ) : (
           <ChartContainer
             config={chartConfig}
-            className="aspect-auto h-[180px] w-full"
+            className="absolute inset-0 aspect-auto h-full w-full justify-stretch"
           >
             <AreaChart
               accessibilityLayer
               data={days}
-              margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+              margin={{ left: 0, right: 8, top: 12, bottom: 0 }}
             >
+              <defs>
+                <linearGradient id="spendingFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-amount)"
+                    stopOpacity={0.35}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-amount)"
+                    stopOpacity={0.04}
+                  />
+                </linearGradient>
+              </defs>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="label"
@@ -117,8 +131,7 @@ export function SpendingChart({
                 type="natural"
                 dataKey="amount"
                 stroke="var(--color-amount)"
-                fill="var(--color-amount)"
-                fillOpacity={0.2}
+                fill="url(#spendingFill)"
                 strokeWidth={2}
               />
             </AreaChart>
