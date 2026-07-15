@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { BellIcon, HelpCircleIcon } from "lucide-react"
 
-import { ThemeToggle } from "@/components/theme-toggle"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -76,7 +75,6 @@ export function DashboardHeader({
           <BellIcon className="size-4" />
           <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-destructive" />
         </Button>
-        <ThemeToggle className="size-8 border-0 bg-transparent shadow-none" />
       </div>
     </header>
   )

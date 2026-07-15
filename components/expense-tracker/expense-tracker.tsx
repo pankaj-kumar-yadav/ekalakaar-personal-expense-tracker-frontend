@@ -1,7 +1,12 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { DatabaseIcon } from "lucide-react"
+import {
+  ChartNoAxesColumnIcon,
+  DatabaseIcon,
+  ReceiptIcon,
+  WalletIcon,
+} from "lucide-react"
 
 import { AddExpenseForm } from "@/components/expense-tracker/add-expense-form"
 import { ExpenseList } from "@/components/expense-tracker/expense-list"
@@ -107,6 +112,7 @@ export function ExpenseTracker() {
           change={0}
           sparkline={sparkline}
           isLoading={isLoading}
+          icon={WalletIcon}
           formatValue={(raw) => formatCurrency(Number(raw))}
         />
         <KpiCard
@@ -115,6 +121,7 @@ export function ExpenseTracker() {
           change={percentChange(expenses.length, Math.max(expenses.length - 1, 0))}
           sparkline={sparkline}
           isLoading={isLoading}
+          icon={ReceiptIcon}
         />
         <KpiCard
           label="Average"
@@ -122,6 +129,7 @@ export function ExpenseTracker() {
           change={0}
           sparkline={sparkline}
           isLoading={isLoading}
+          icon={ChartNoAxesColumnIcon}
           formatValue={(raw) => formatCurrency(Number(raw))}
         />
       </div>

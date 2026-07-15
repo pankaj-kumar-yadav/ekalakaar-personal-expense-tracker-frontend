@@ -3,22 +3,52 @@
 import { useEffect, useState } from "react"
 import { format, parseISO } from "date-fns"
 import {
+  CarIcon,
+  LayersIcon,
   PlusCircleIcon,
   ReceiptIcon,
   SearchIcon,
   TagIcon,
+  type LucideIcon,
 } from "lucide-react"
 
+import { KravioCard } from "@/components/dashboard/kravio-card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getDashboardActivity } from "@/lib/api"
 import type { ActivityRangeKey, Expense } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
-function activityIcon(category: string) {
-  if (category === "Food") return ReceiptIcon
-  if (category === "Bills") return TagIcon
-  return PlusCircleIcon
+function activityStyle(category: string): {
+  icon: LucideIcon
+  bubble: string
+} {
+  switch (category) {
+    case "Food":
+      return {
+        icon: ReceiptIcon,
+        bubble:
+          "bg-rose-500/15 text-rose-600",
+      }
+    case "Transport":
+      return {
+        icon: CarIcon,
+        bubble:
+          "bg-sky-500/15 text-sky-600",
+      }
+    case "Bills":
+      return {
+        icon: TagIcon,
+        bubble:
+          "bg-violet-500/15 text-violet-600",
+      }
+    default:
+      return {
+        icon: PlusCircleIcon,
+        bubble:
+          "bg-emerald-500/15 text-emerald-600",
+      }
+  }
 }
 
 export function ActivityFeed() {
@@ -62,12 +92,14 @@ export function ActivityFeed() {
   ]
 
   return (
-    <div className="flex h-full flex-col rounded-xl border bg-card p-4 shadow-sm">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="font-semibold tracking-tight">Latest Updates</h2>
-      </div>
-
-      <div className="mt-3 flex gap-1 rounded-lg bg-muted p-1">
+    <KravioCard
+      title="Latest Updates"
+      icon={LayersIcon}
+      iconPosition="right"
+      className="h-full"
+      innerClassName="flex flex-1 flex-col p-4"
+    >
+      <div className="flex gap-1 rounded-lg bg-muted p-1">
         {tabs.map((item) => (
           <button
             key={item.key}
@@ -106,7 +138,7 @@ export function ActivityFeed() {
           </p>
         ) : (
           expenses.slice(0, 6).map((expense) => {
-            const Icon = activityIcon(expense.category)
+            const { icon: Icon, bubble } = activityStyle(expense.category)
             const stamp = format(
               parseISO(expense.createdAt ?? expense.date),
               "h:mm a"
@@ -116,13 +148,16 @@ export function ActivityFeed() {
                 key={expense._id}
                 className="flex items-start gap-3 rounded-lg border border-transparent p-2 hover:border-border hover:bg-muted/40"
               >
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                  <Icon className="size-3.5 text-muted-foreground" />
+                <div
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-full",
+                    bubble
+                  )}
+                >
+                  <Icon className="size-3.5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    Expense added
-                  </p>
+                  <p className="truncate text-sm font-medium">Expense added</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {expense.description} · {expense.category}
                   </p>
@@ -135,6 +170,6 @@ export function ActivityFeed() {
           })
         )}
       </div>
-    </div>
+    </KravioCard>
   )
 }

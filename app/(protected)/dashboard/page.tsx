@@ -1,7 +1,12 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { ChevronDownIcon } from "lucide-react"
+import {
+  ChartNoAxesColumnIcon,
+  ChevronDownIcon,
+  ReceiptIcon,
+  WalletIcon,
+} from "lucide-react"
 
 import { ActivityFeed } from "@/components/dashboard/activity-feed"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
@@ -139,21 +144,30 @@ export default function DashboardPage() {
                 sparkline: [0],
               },
             ]
-          ).map((kpi) => (
-            <KpiCard
-              key={kpi.label}
-              label={kpi.label}
-              value={kpi.value}
-              change={kpi.change}
-              sparkline={kpi.sparkline}
-              isLoading={isLoading}
-              formatValue={
-                kpi.label === "Expenses Logged"
-                  ? undefined
-                  : (raw) => formatCurrency(Number(raw))
-              }
-            />
-          ))}
+          ).map((kpi) => {
+            const icon =
+              kpi.label === "Expenses Logged"
+                ? ReceiptIcon
+                : kpi.label === "Avg. Expense"
+                  ? ChartNoAxesColumnIcon
+                  : WalletIcon
+            return (
+              <KpiCard
+                key={kpi.label}
+                label={kpi.label}
+                value={kpi.value}
+                change={kpi.change}
+                sparkline={kpi.sparkline}
+                isLoading={isLoading}
+                icon={icon}
+                formatValue={
+                  kpi.label === "Expenses Logged"
+                    ? undefined
+                    : (raw) => formatCurrency(Number(raw))
+                }
+              />
+            )
+          })}
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">

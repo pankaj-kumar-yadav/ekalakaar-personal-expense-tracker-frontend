@@ -1,8 +1,15 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { FilterIcon, MoreHorizontalIcon, SearchIcon, Trash2Icon } from "lucide-react"
+import {
+  CompassIcon,
+  FilterIcon,
+  MoreHorizontalIcon,
+  SearchIcon,
+  Trash2Icon,
+} from "lucide-react"
 
+import { KravioCard } from "@/components/dashboard/kravio-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -54,30 +61,35 @@ export function ExpenseMonitoringTable({
     }
   }
 
-  return (
-    <div className="rounded-xl border bg-card shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
-        <h2 className="font-semibold tracking-tight">Expense Monitoring</h2>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search expense"
-              className="h-8 w-44 pl-8 text-sm"
-            />
-          </div>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5">
-            <FilterIcon className="size-3.5" />
-            Filter
-          </Button>
-          <Button variant="ghost" size="icon" className="size-8">
-            <MoreHorizontalIcon className="size-4" />
-          </Button>
-        </div>
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      <div className="relative">
+        <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search expense"
+          className="h-8 w-44 pl-8 text-sm"
+        />
       </div>
+      <Button variant="outline" size="sm" className="h-8 gap-1.5">
+        <FilterIcon className="size-3.5" />
+        Filter
+      </Button>
+      <Button variant="ghost" size="icon" className="size-8">
+        <MoreHorizontalIcon className="size-4" />
+      </Button>
+    </div>
+  )
 
+  return (
+    <KravioCard
+      title="Expense Monitoring"
+      icon={CompassIcon}
+      iconPosition="left"
+      headerActions={headerActions}
+      innerClassName="overflow-hidden p-0"
+    >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
@@ -161,6 +173,6 @@ export function ExpenseMonitoringTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </KravioCard>
   )
 }

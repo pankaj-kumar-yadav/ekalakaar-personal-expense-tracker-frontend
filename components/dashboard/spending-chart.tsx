@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { SparklesIcon } from "lucide-react"
 
+import { KravioCard } from "@/components/dashboard/kravio-card"
 import { formatCurrency } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -34,23 +36,26 @@ export function SpendingChart({
   const positive = change >= 0
 
   return (
-    <div className="flex h-full flex-col rounded-xl border bg-card p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-semibold tracking-tight">{title}</h2>
-          <p className="mt-1 text-2xl font-semibold tracking-tight">
-            {isLoading ? "—" : formatCurrency(total)}
-          </p>
-          <p
-            className={cn(
-              "text-xs font-medium",
-              positive ? "text-success" : "text-destructive"
-            )}
-          >
-            {positive ? "+" : ""}
-            {change.toFixed(1)}% vs prior period
-          </p>
-        </div>
+    <KravioCard
+      title={title}
+      icon={SparklesIcon}
+      iconPosition="left"
+      className="h-full"
+      innerClassName="flex flex-1 flex-col p-4"
+    >
+      <div>
+        <p className="text-2xl font-semibold tracking-tight">
+          {isLoading ? "—" : formatCurrency(total)}
+        </p>
+        <p
+          className={cn(
+            "text-xs font-medium",
+            positive ? "text-emerald-600" : "text-red-600"
+          )}
+        >
+          {positive ? "+" : ""}
+          {change.toFixed(1)}% vs prior period
+        </p>
       </div>
 
       <div className="mt-6 flex flex-1 items-end gap-2">
@@ -96,6 +101,6 @@ export function SpendingChart({
               )
             })}
       </div>
-    </div>
+    </KravioCard>
   )
 }

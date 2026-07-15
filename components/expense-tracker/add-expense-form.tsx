@@ -116,7 +116,7 @@ export function AddExpenseForm({
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
                 disabled={isSubmitting}
-                className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30"
+                className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
               >
                 {EXPENSE_CATEGORIES.map((item) => (
                   <option key={item} value={item}>
