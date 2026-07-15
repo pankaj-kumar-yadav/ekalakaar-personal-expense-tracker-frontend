@@ -1,15 +1,22 @@
 "use client"
 
-import { useState } from "react"
 import { SparklesIcon } from "lucide-react"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import { KravioCard } from "@/components/dashboard/kravio-card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart"
 import { formatCurrency } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 type DayPoint = {
   label: string
   amount: number
+  fullLabel?: string
 }
 
 type SpendingChartProps = {
@@ -20,6 +27,13 @@ type SpendingChartProps = {
   isLoading?: boolean
 }
 
+const chartConfig = {
+  amount: {
+    label: "Spending",
+    color: "var(--chart-1)",
+  },
+} satisfies ChartConfig
+
 export function SpendingChart({
   title = "Spending Trend",
   total,
@@ -27,12 +41,6 @@ export function SpendingChart({
   days,
   isLoading,
 }: SpendingChartProps) {
-  const max = Math.max(...days.map((d) => d.amount), 1)
-  const peakIndex = days.reduce(
-    (best, day, index) => (day.amount > days[best].amount ? index : best),
-    0
-  )
-  const [active, setActive] = useState(peakIndex)
   const positive = change >= 0
 
   return (
@@ -58,48 +66,64 @@ export function SpendingChart({
         </p>
       </div>
 
-      <div className="mt-6 flex flex-1 items-end gap-2">
-        {isLoading
-          ? Array.from({ length: 7 }).map((_, index) => (
-              <div
-                key={index}
-                className="flex flex-1 flex-col items-center gap-2"
-              >
-                <div className="h-28 w-full rounded-md bg-muted" />
-                <span className="text-[11px] text-muted-foreground">—</span>
-              </div>
-            ))
-          : days.map((day, index) => {
-              const height = Math.max((day.amount / max) * 120, 8)
-              const isActive = index === active
-              return (
-                <button
-                  key={day.label}
-                  type="button"
-                  className="group relative flex flex-1 flex-col items-center gap-2"
-                  onMouseEnter={() => setActive(index)}
-                  onFocus={() => setActive(index)}
-                >
-                  {isActive ? (
-                    <span className="absolute -top-8 rounded-md bg-primary px-2 py-1 text-[11px] whitespace-nowrap text-primary-foreground">
-                      {day.label}: {formatCurrency(day.amount)}
-                    </span>
-                  ) : null}
-                  <div
-                    className={cn(
-                      "w-full rounded-md transition-colors",
-                      isActive
-                        ? "bg-primary"
-                        : "bg-muted group-hover:bg-primary/40"
-                    )}
-                    style={{ height }}
+      <div className="mt-6 flex min-h-[180px] flex-1 flex-col justify-end">
+        {isLoading ? (
+          <div className="h-[180px] w-full rounded-md bg-muted" />
+        ) : (
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-[180px] w-full"
+          >
+            <AreaChart
+              accessibilityLayer
+              data={days}
+              margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={48}
+                tickFormatter={(value) =>
+                  typeof value === "number"
+                    ? new Intl.NumberFormat("en-IN", {
+                        notation: "compact",
+                        maximumFractionDigits: 1,
+                      }).format(value)
+                    : String(value)
+                }
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    formatter={(value) => formatCurrency(Number(value))}
+                    labelFormatter={(_, payload) => {
+                      const point = payload?.[0]?.payload as
+                        | DayPoint
+                        | undefined
+                      return point?.fullLabel ?? point?.label ?? ""
+                    }}
                   />
-                  <span className="text-[11px] text-muted-foreground">
-                    {day.label}
-                  </span>
-                </button>
-              )
-            })}
+                }
+              />
+              <Area
+                type="natural"
+                dataKey="amount"
+                stroke="var(--color-amount)"
+                fill="var(--color-amount)"
+                fillOpacity={0.2}
+                strokeWidth={2}
+              />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </div>
     </KravioCard>
   )
