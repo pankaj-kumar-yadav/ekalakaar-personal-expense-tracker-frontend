@@ -1,3 +1,4 @@
+import { AppFooter } from "@/components/app-footer"
 import { AuthGate } from "@/components/auth-gate"
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -11,7 +12,10 @@ export default function ProtectedLayout({
     <AuthGate mode="protected">
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>{children}</SidebarInset>
+        <SidebarInset>
+          {children}
+          <AppFooter />
+        </SidebarInset>
       </SidebarProvider>
     </AuthGate>
   )

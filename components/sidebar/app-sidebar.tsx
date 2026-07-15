@@ -10,7 +10,6 @@ import {
   ReceiptIcon,
   SearchIcon,
   SettingsIcon,
-  WalletIcon,
 } from "lucide-react"
 
 import { NavUser } from "@/components/sidebar/nav-user"
@@ -27,6 +26,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
+import { APP_INFO } from "@/lib/app-info"
 import { useAuth } from "@/lib/auth-context"
 
 const mainNav = [
@@ -42,60 +42,27 @@ const mainNav = [
   },
 ]
 
-const supportNav = [
-  {
-    title: "Feedback",
-    url: "#",
-    icon: MessageSquareIcon,
-  },
-  {
-    title: "Help & Support",
-    url: "#",
-    icon: HelpCircleIcon,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: SettingsIcon,
-  },
-]
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { user } = useAuth()
 
   return (
-    <Sidebar variant="inset" {...props}>
-      <SidebarHeader className="gap-3">
+    <Sidebar {...props}>
+      <SidebarHeader className="relative h-14 shrink-0 justify-center gap-0 px-2 py-0 after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:border-b-2 after:border-dashed after:border-border/60">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <WalletIcon className="size-4" />
+                <APP_INFO.Icon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold tracking-tight">
-                  Expense Tracker
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  Personal finance
+                  {APP_INFO.name}
                 </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <div className="relative px-2">
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search anything"
-            className="h-9 bg-muted/60 pl-8 text-sm"
-            readOnly
-            aria-label="Search"
-          />
-          <kbd className="pointer-events-none absolute top-1/2 right-3.5 hidden -translate-y-1/2 rounded border bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-block">
-            ⌘K
-          </kbd>
-        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -107,29 +74,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   isActive={pathname === item.url}
                   tooltip={item.title}
                   render={<Link href={item.url} />}
-                >
-                  <item.icon />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
-        <SidebarSeparator />
-        <SidebarGroup>
-          <SidebarGroupLabel>Support</SidebarGroupLabel>
-          <SidebarMenu>
-            {supportNav.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  tooltip={item.title}
-                  render={
-                    item.url === "#" ? (
-                      <button type="button" />
-                    ) : (
-                      <Link href={item.url} />
-                    )
-                  }
                 >
                   <item.icon />
                   <span>{item.title}</span>

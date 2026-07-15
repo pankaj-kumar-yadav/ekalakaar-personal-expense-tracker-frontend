@@ -3,8 +3,6 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { WalletIcon } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -21,6 +19,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { APP_INFO } from "@/lib/app-info"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 
@@ -55,7 +54,7 @@ export function LoginForm({
       <Card className="border shadow-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <WalletIcon className="size-5" />
+            <APP_INFO.Icon className="size-5" />
           </div>
           <CardTitle className="text-xl tracking-tight">Welcome back</CardTitle>
           <CardDescription>

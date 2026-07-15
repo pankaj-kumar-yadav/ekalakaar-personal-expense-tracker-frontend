@@ -26,7 +26,7 @@ export function DashboardHeader({
   breadcrumbs: Crumb[]
 }) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-card/40 px-4 backdrop-blur-sm">
+    <header className="relative sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-white px-4 after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:border-b-2 after:border-dashed after:border-border/60">
       <div className="flex flex-1 items-center gap-2">
         <SidebarTrigger className="-ml-1" />
         <Separator

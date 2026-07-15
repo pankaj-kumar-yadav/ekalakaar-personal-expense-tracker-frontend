@@ -1,6 +1,7 @@
 "use client"
 
 import { LoginForm } from "@/components/login-form"
+import { APP_INFO } from "@/lib/app-info"
 
 export default function LoginPage() {
   return (
@@ -8,7 +9,7 @@ export default function LoginPage() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="text-center">
           <p className="text-sm font-medium tracking-tight text-muted-foreground">
-            Expense Tracker
+            {APP_INFO.name}
           </p>
         </div>
         <LoginForm />
