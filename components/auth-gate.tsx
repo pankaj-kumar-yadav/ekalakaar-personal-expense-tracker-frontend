@@ -12,34 +12,15 @@ type AuthGateProps = {
 
 export function AuthGate({ mode, children }: AuthGateProps) {
   const router = useRouter()
-  const { user, isLoading } = useAuth()
+  const { user } = useAuth()
 
   useEffect(() => {
-    if (isLoading) {
-      return
-    }
-
-    if (mode === "protected" && !user) {
-      router.replace("/")
-      return
-    }
-
+    // Memory-only session: redirect home→dashboard only when login just set user.
+    // Protected routes rely on the jwt cookie + API 401 handling, not on user state.
     if (mode === "public" && user) {
       router.replace("/dashboard")
     }
-  }, [isLoading, mode, router, user])
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-svh items-center justify-center text-sm text-muted-foreground">
-        Loading...
-      </div>
-    )
-  }
-
-  if (mode === "protected" && !user) {
-    return null
-  }
+  }, [mode, router, user])
 
   if (mode === "public" && user) {
     return null

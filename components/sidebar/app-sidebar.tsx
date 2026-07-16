@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sidebar"
 import { APP_INFO } from "@/lib/app-info"
 import { useAuth } from "@/lib/auth-context"
+import { getUserAvatarUrl } from "@/services/avatar"
 
 const mainNav = [
   {
@@ -89,6 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             user={{
               name: user.name,
               email: user.email,
+              avatar: getUserAvatarUrl(user.email),
             }}
           />
         ) : null}

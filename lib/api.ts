@@ -14,15 +14,46 @@ import type {
   User,
 } from "@/lib/types"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
-
+// Same-origin so the HttpOnly `jwt` cookie is set on the frontend host
+// (via next.config rewrites) and readable by proxy.ts.
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: "",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 })
+
+type UnauthorizedHandler = () => void
+
+let unauthorizedHandler: UnauthorizedHandler | null = null
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
+  unauthorizedHandler = handler
+}
+
+function isAuthCredentialRequest(url: string | undefined) {
+  if (!url) {
+    return false
+  }
+  return (
+    url.includes("/api/users/login") || url.includes("/api/users/register")
+  )
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (
+      isAxiosError(error) &&
+      error.response?.status === 401 &&
+      !isAuthCredentialRequest(error.config?.url)
+    ) {
+      unauthorizedHandler?.()
+    }
+    return Promise.reject(error)
+  }
+)
 
 function getErrorMessage(error: unknown): string {
   if (isAxiosError(error)) {
@@ -77,15 +108,6 @@ export async function loginUser(payload: {
 export async function logoutUser(): Promise<void> {
   try {
     await api.post("/api/users/logout")
-  } catch (error) {
-    throw new Error(getErrorMessage(error))
-  }
-}
-
-export async function getMe(): Promise<User> {
-  try {
-    const { data } = await api.get<ApiSuccessResponse<User>>("/api/users/me")
-    return data.data
   } catch (error) {
     throw new Error(getErrorMessage(error))
   }
